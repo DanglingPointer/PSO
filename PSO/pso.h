@@ -4,6 +4,7 @@
 #include<exception>
 #include<cmath>
 #include<sstream>
+#include<string>
 #include<utility>
 #include<set>
 
@@ -38,7 +39,7 @@ public:
 			while (buff >> value)
 				(m_psets + i)->push_back(value);
 
-			line.clear;
+			line.clear();
 			buff.str("");
 		}
 	}
@@ -91,7 +92,7 @@ public:
 			*(m_lbest.second + i) = *(m_ppos + i);
 		}
 		for (int i = 0; i < m_ndim; ++i)
-			*(m_pvel + i) = rand() % (*(m_pmaxpos + i) / 5) * std::pow(-1, rand()); // max 1/5 of side length
+			*(m_pvel + i) = (int)(rand() % (*(m_pmaxpos + i) / 5) * std::pow(-1, rand())); // max 1/5 of side length
 	}
 	~Particle()
 	{
@@ -143,13 +144,14 @@ public:
 			}
 		return *this;
 	}
-	// w = inertia weight, X = constriction factor
+	// w = inertia weight, X = constriction factor (prevents explosion)
 	Particle& update_vel(double w, double X, int c1, int c2)
 	{
 		double r1 = rand() / RAND_MAX;
 		double r2 = rand() / RAND_MAX;
 		for (int dim = 0; dim < m_ndim; ++dim)
-			*(m_pvel + dim) = X*(w*(*(m_pvel + dim)) + c1*r1*(*(m_lbest.second + dim) - *(m_ppos + dim)) + c2*r2*(m_pgbest->best_pos(dim) - *(m_ppos + dim)));
+			*(m_pvel + dim) = (int)( X*(w*(*(m_pvel + dim)) + c1*r1*(*(m_lbest.second + dim) - *(m_ppos + dim)) 
+									   + c2*r2*(m_pgbest->best_pos(dim) - *(m_ppos + dim))) );
 		return *this;
 	}
 private:
@@ -195,7 +197,7 @@ public:
 			++m_count;
 		return *this;
 	}
-	std::pair<double, std::vector<double>> get_best()
+	std::pair<double, std::vector<double>> get_best() const
 	{
 		std::pair<double, std::vector<double>> temp;
 		temp.first = m_pgbest->best_fit();
@@ -208,7 +210,7 @@ public:
 private:
 	double intertWeight() const
 	{
-		// depending on m_count
+		// depends on m_count
 		// ...to be written...
 		return 0.7;
 	}
