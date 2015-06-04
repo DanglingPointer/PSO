@@ -15,6 +15,7 @@
 
 
 #include"partswarmopt.h"
+#include"pso.h"
 #include <iostream>
 #include <fstream>
 

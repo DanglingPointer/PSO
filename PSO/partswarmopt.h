@@ -38,13 +38,12 @@ static const int NOG = 500; // assumed number of generations for calculating ine
 
 
 class Feasible_set
-{ // Not to be used by user
+{
 public:
 	Feasible_set()
 	{
 		m_numberOfSets = 0;
 	}
-
 	// Adds new parameter range at the end of m_data
 	void add_set(const vector<double>& newset)
 	{
@@ -56,7 +55,6 @@ public:
 		m_numbersInEachSet[m_numberOfSets] = size;
 		m_numberOfSets++;
 	}
-
 	// Retrieve parameter value (value number from 1)
 	double get_value(int setNumber, int valueNumber) const
 	{
