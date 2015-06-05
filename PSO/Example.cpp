@@ -1,8 +1,7 @@
 // Example of using the class Pso
 
 // Here we are optimising dimensions of a box so that neither
-// of the side lenghes exceeds some limit
-
+// of the side lengths exceeds some limit
 
 //    ____________
 //   /           /|
@@ -31,7 +30,8 @@ int main()
 	std::ofstream fout("output.txt", std::ios::out);
 	const unsigned int n_part = 10; // number of particles
 	const unsigned int n_gen = 200; // number of generations
-
+	fout.close();
+	
 	//Pso box(inpFileName, n_part);
 	//box.initialize();
 	//for (unsigned int i = 0; i < n_gen - 1; i++)
@@ -109,10 +109,9 @@ std::string createInputFile()
 	{
 		file << 20 << '\n';
 		for (int i = 0; i < 20; i++)
-		{
 			file << (i + 1)*2 << " ";
-		}
 		file << '\n';
 	}
+	file.close();
 	return filename;
 }

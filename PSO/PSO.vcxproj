@@ -80,7 +80,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\partswarmopt.h" />
+    <ClInclude Include="partswarmopt.h" />
     <ClInclude Include="pso.h" />
   </ItemGroup>
   <ItemGroup>

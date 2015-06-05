@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\partswarmopt.h">
+    <ClInclude Include="pso.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pso.h">
+    <ClInclude Include="partswarmopt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
