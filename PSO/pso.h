@@ -5,7 +5,7 @@
 // for one parameter must be on the same line. No new line at
 // the end of the file.
 // Objective and constraint functions are to be implemented
-// by deriving from IFitness. Otherwise only the class Pso
+// by deriving from IFitness. Otherwise only the class DiscretePso
 // is supposed to be used directly by user. 
 
 #include<fstream>
@@ -20,23 +20,54 @@
 #include<iomanip>
 #include<algorithm>
 
-// Realization must be written by user
+// ===============USER==INTERFACE============================================
+
 __interface IFitness
-{
+{	// Realization must be written by user (what to optimize)
 	double objective(const std::vector<double>& param);
 	std::set<double> constraint(const std::vector<double>& param);
 };
+
+class Pso
+{
+public:
+	// Creates new discrete PSO
+	static Pso* discrete(const char* filename, IFitness* funcs, int numPart);
+
+	virtual ~Pso(){}
+	// Termination criterions
+	enum class Term
+	{
+		gen_count,	// generation count 
+		fit_dev		// no gbest deviation for 'numGen' iterations
+	};
+	// Carry out optimization
+	virtual Pso* run(int numGen, Pso::Term criterion) = 0;
+	// Nullify iteration counter
+	virtual Pso* reset_counter() = 0;
+	// Optimization results
+	virtual std::pair<double, std::vector<double>> get_best() const = 0;
+	// Best fitness history
+	virtual void print_log(std::ostream& out)const = 0;
+	// Local learning factor
+	int c1;
+	// Global learning factor
+	int c2;
+};
+
+// ==========================================================================
+
 class ParamSet
 {
 public:
-	ParamSet(char* filename)
+	ParamSet(const char* filename)
 	{
 		std::ifstream fin(filename, std::ios::in);
 		if (!fin.is_open())
 			throw std::invalid_argument("ParamSet::ParamSet()");
 
 		for (m_ndim = 0; !fin.eof(); ++m_ndim) // no new line at end of the file!
-			fin.ignore(10000, '\n');
+			fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 		fin.seekg(0, fin.beg);
 
 		m_psets = new std::vector<double>[m_ndim];
@@ -50,6 +81,7 @@ public:
 			while (buff >> value)
 				(m_psets + i)->push_back(value);
 			line.clear();
+			buff.clear();
 		}
 		fin.close();
 	}
@@ -57,7 +89,7 @@ public:
 	{
 		return m_ndim;
 	}
-	int length(int dimNum) const // == maxpos[dimNum]
+	int length(int dimNum) const
 	{
 		return (m_psets + dimNum)->size();
 	}
@@ -82,8 +114,9 @@ public:
 		
 		double alpha = rand() % 1900 + 100;
 		double H = 0;
-		std::set<double> *p = &(m_pfuncs->constraint(values));
-		for (std::set<double>::const_iterator it = p->begin(); it != p->end(); ++it)
+		std::set<double> con = m_pfuncs->constraint(values);
+
+		for (std::set<double>::const_iterator it = con.begin(); it != con.end(); ++it)
 		{
 			double gamma = (*it < 1) ? 1.0 : 2.0;
 			double theta;
@@ -91,9 +124,9 @@ public:
 			else if (*it < 0.001)	theta = 10 * alpha;
 			else if (*it < 1)		theta = 100 * alpha;
 			else					theta = 1000 * alpha;
-			H += (theta * std::pow(*it, gamma));
+			H += (theta * std::pow(std::max(0.0, *it), gamma));
 		}
-		return m_pfuncs->objective(values) * std::pow(*m_pcount, 0.1) * H;
+		return m_pfuncs->objective(values) + std::pow((*m_pcount + 1), 0.1) * H;
 	}
 private:
 	IFitness* m_pfuncs;
@@ -108,14 +141,15 @@ public:
 	{
 		m_ppos = new int[m_ndim];
 		m_pvel = new int[m_ndim];
+		m_lbest.second = new int[m_ndim];
 
 		for (int i = 0; i < m_ndim; ++i)
 		{
-			*(m_ppos + i) = rand() % *(m_pmaxpos + i);
+			*(m_ppos + i) = rand() % (*(m_pmaxpos + i));
 			*(m_lbest.second + i) = *(m_ppos + i);
 		}
 		for (int i = 0; i < m_ndim; ++i)
-			*(m_pvel + i) = (int)(rand() % (*(m_pmaxpos + i) / 5) * std::pow(-1, rand())); // max 1/5 of side length
+			*(m_pvel + i) = (int)(rand() % *(m_pmaxpos + i) * std::pow(-1, rand())); // max 1/1 of side length
 	}
 	~Particle()
 	{
@@ -133,7 +167,7 @@ public:
 	}
 	Particle& init_fit(const FitConv& fit)
 	{
-		m_lbest.first = fit(m_ppos, m_ndim);
+		m_lbest.first = fit(m_lbest.second, m_ndim);
 		if (m_lbest.first < m_pgbest->best_fit())
 			m_pgbest = this;
 		return *this;
@@ -172,8 +206,8 @@ public:
 	// w = inertia weight, X = constriction factor (prevents explosion)
 	Particle& update_vel(double w, double X, int c1, int c2)
 	{
-		double r1 = rand() / RAND_MAX;
-		double r2 = rand() / RAND_MAX;
+		double r1 = (double)rand() / RAND_MAX;
+		double r2 = (double)rand() / RAND_MAX;
 		for (int dim = 0; dim < m_ndim; ++dim)
 			*(m_pvel + dim) = (int)( X*(w*(*(m_pvel + dim)) + c1*r1*(*(m_lbest.second + dim) - *(m_ppos + dim)) 
 									   + c2*r2*(m_pgbest->best_pos(dim) - *(m_ppos + dim))) );
@@ -189,13 +223,13 @@ private:
 	int* m_ppos;						// current position
 	int* m_pvel;						// current velocity
 };
-class Pso
+class DiscretePso :public Pso
 {
 public:
-	Pso(char* filename, IFitness* funcs, int numPart) :m_fs(filename), m_pgbest(nullptr), m_count(0), m_fit(funcs, &m_fs, &m_count)
+	DiscretePso(const char* filename, IFitness* funcs, int numPart) :m_fs(filename), m_pgbest(nullptr), m_count(0), m_fit(funcs, &m_fs, &m_count)
 	{
 		c1 = c2 = 2;
-		m_pmaxpos = new int(m_fs.ndim());
+		m_pmaxpos = new int[m_fs.ndim()];
 		for (int dim = 0; dim < m_fs.ndim(); ++dim)
 			*(m_pmaxpos + dim) = m_fs.length(dim);
 
@@ -207,18 +241,13 @@ public:
 			(*it)->init_fit(m_fit);
 
 	}
-	~Pso()
+	~DiscretePso()
 	{
 		for (std::set<Particle*>::iterator it = m_parts.begin(); it != m_parts.end(); ++it)
 			delete *it;
 		delete[] m_pmaxpos;
 	}
-	enum class Term	// termination criterions
-	{
-		gen_count,	// generation count 
-		fit_dev		// no gbest deviation for 'numGen' iterations
-	};
-	Pso& run(int numGen, Term criterion = Term::gen_count)
+	Pso* run(int numGen, Pso::Term criterion = Term::gen_count)
 	{
 		m_log.push_back(m_pgbest->best_fit());
 		double X = constriction();
@@ -261,12 +290,12 @@ public:
 				m_log.push_back(m_pgbest->best_fit());
 			}
 		}
-		return *this;
+		return static_cast<Pso*>(this);
 	}
-	Pso& reset_counter()
+	Pso* reset_counter()
 	{
 		m_count = 0;
-		return *this;
+		return static_cast<Pso*>(this);
 	}
 	std::pair<double, std::vector<double>> get_best() const
 	{
@@ -278,23 +307,21 @@ public:
 	}
 	void print_log(std::ostream& out) const
 	{
-		out << "Generation" << " || " << "Best fitness" << '\n';
+		out << "\nGeneration" << " || " << "Best fitness" << '\n';
 		out << "---------- || ------------\n";
 		int gen = 1;
 		for (std::list<double>::const_iterator it = m_log.begin(); it != m_log.end(); ++it, ++gen)
 			out << std::setw(6) << gen << "    " << " || " << "    " << *it << '\n';
 		out << "---------- || ------------\n\n";
 	}
-	int c1;
-	int c2;
 private:
 	double rand_w() const
 	{
-		return 0.5 + 0.5*(rand() / RAND_MAX);
+		return 0.5 + 0.5*((double)rand() / RAND_MAX);
 	}
 	double chaotic_w(int maxGen) const
 	{
-		double z = rand() / RAND_MAX;
+		double z = (double)rand() / RAND_MAX;
 		z = 4 * z*(1 - z);
 		return (0.9 - 0.4)*(maxGen - m_count) / maxGen + 0.4*z;
 	}
@@ -311,3 +338,7 @@ private:
 	int m_count;
 	std::list<double> m_log;
 };
+Pso* Pso::discrete(const char* filename, IFitness* funcs, int numPart)
+{
+	return new DiscretePso(filename, funcs, numPart);
+}
