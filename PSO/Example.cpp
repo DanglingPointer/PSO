@@ -20,7 +20,7 @@ using namespace Opt;
 // Creates discrete input file
 std::string createDInputFile()
 {
-	std::string filename = "boxsides.txt";
+	std::string filename = "discrete_input.txt";
 	std::ofstream file(filename, std::ios::out);
 
 	for (int j = 1; j <= 3; j++)
@@ -36,7 +36,7 @@ std::string createDInputFile()
 // Creates continuous input file
 std::string createCInputFile()
 {
-	std::string filename = "boxsides.txt";
+	std::string filename = "cont_input.txt";
 	std::ofstream file(filename, std::ios::out);
 
 	for (int j = 1; j <= 3; j++)
@@ -86,7 +86,7 @@ int main()
 {
 	std::string inpFileName = createCInputFile();
 
-	Fitness fit(24.73);
+	Fitness fit(25.23);
 	IPso* ppso = IPso::continuous(inpFileName.c_str(), &fit, 50);
 	
 	ppso->run(100, IPso::Term::fit_dev);

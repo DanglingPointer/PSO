@@ -219,7 +219,7 @@ namespace Opt
 		Particle<Val_t>* m_pgbest;
 		std::list<double> m_log;
 	};
-
+	
 	// ======================DISCRETE=PSO========================================
 
 	class ParamSet
@@ -249,6 +249,10 @@ namespace Opt
 				buff.clear();
 			}
 			fin.close();
+		}
+		~ParamSet()
+		{
+			delete[] m_psets;
 		}
 		int ndim() const
 		{
@@ -333,12 +337,15 @@ namespace Opt
 				}
 		}
 	private:
-		int* m_pmaxpos;		// upper bounds for position, pointer to a predefined dynamic array
+		int* m_pmaxpos;		// upper bounds for position
 	};
-	class DiscretePso :public Pso_base<int, ParamSet>
+
+	typedef Pso_base<int, ParamSet> Discr_Pso_base;
+
+	class DiscretePso :public Discr_Pso_base
 	{
 	public:
-		DiscretePso(const char* filename, IFitness* funcs, int numPart) :Pso_base<int, ParamSet>(filename, funcs, numPart)
+		DiscretePso(const char* filename, IFitness* funcs, int numPart) :Discr_Pso_base(filename, funcs, numPart)
 		{
 			m_pfit = new DFitConv(funcs, &m_fs, &m_count);
 
@@ -359,12 +366,12 @@ namespace Opt
 		}
 		IPso* run(int numGen, IPso::Term criterion)
 		{
-			Pso_base<int, ParamSet>::run_generic(numGen, criterion);
+			Discr_Pso_base::run_generic(numGen, criterion);
 			return static_cast<IPso*>(this);
 		}
 		IPso* reset_counter()
 		{
-			Pso_base<int, ParamSet>::reset_counter_generic();
+			Discr_Pso_base::reset_counter_generic();
 			return static_cast<IPso*>(this);
 		}
 		std::pair<double, std::vector<double>> get_best() const
@@ -407,7 +414,7 @@ namespace Opt
 		}
 		~ParamBounds()
 		{
-			delete m_pbounds;
+			delete[] m_pbounds;
 		}
 		int ndim() const
 		{
@@ -476,7 +483,7 @@ namespace Opt
 				*(m_lbest.second + i) = *(m_ppos + i);
 			}
 			for (int i = 0; i < m_ndim; ++i)
-				*(m_pvel + i) = ((double)rand() / RAND_MAX) * m_pb->length(i) * std::pow(-1, rand()); // max 1/1 of side length
+				*(m_pvel + i) = ((double)rand() / RAND_MAX) * m_pb->length(i) * std::pow(-1, rand());
 		}
 		void update_pos()
 		{
@@ -498,10 +505,13 @@ namespace Opt
 	private:
 		ParamBounds* m_pb;
 	};
-	class ContinuousPso :public Pso_base<double, ParamBounds>
+
+	typedef Pso_base<double, ParamBounds> Cont_Pso_base;
+	
+	class ContinuousPso :public Cont_Pso_base
 	{
 	public:
-		ContinuousPso(const char* filename, IFitness* funcs, int numPart) :Pso_base<double, ParamBounds>(filename, funcs, numPart)
+		ContinuousPso(const char* filename, IFitness* funcs, int numPart) :Cont_Pso_base(filename, funcs, numPart)
 		{
 			m_pfit = new CFitConv(funcs, &m_fs, &m_count);
 
@@ -514,12 +524,12 @@ namespace Opt
 		}
 		IPso* run(int numGen, IPso::Term criterion)
 		{
-			Pso_base<double, ParamBounds>::run_generic(numGen, criterion);
+			Cont_Pso_base::run_generic(numGen, criterion);
 			return static_cast<IPso*>(this);
 		}
 		IPso* reset_counter()
 		{
-			Pso_base<double, ParamBounds>::reset_counter_generic();
+			Cont_Pso_base::reset_counter_generic();
 			return static_cast<IPso*>(this);
 		}
 		std::pair<double, std::vector<double>> get_best() const
