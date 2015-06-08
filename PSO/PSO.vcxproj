@@ -84,7 +84,8 @@
     <ClInclude Include="pso.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="example.cpp" />
+    <ClCompile Include="ex_box.cpp" />
+    <ClCompile Include="ex_benchmark.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

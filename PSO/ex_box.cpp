@@ -87,13 +87,13 @@ int main()
 	std::string inpFileName = createCInputFile();
 
 	Fitness fit(25.23);
-	IPso* ppso = IPso::continuous(inpFileName.c_str(), &fit, 50);
+	Pso* ppso = Pso::continuous(inpFileName.c_str(), &fit, 50);
 	
-	ppso->run(100, IPso::Term::fit_dev);
+	ppso->run(100, Pso::Term::fit_dev);
 	ppso->print_log(std::cout);
 
 	std::cout << "\nResulting volume: " << ppso->get_best().first
-		<< "\nParameters: " << ppso->get_best().second;
+		<< "\nParameters: " << ppso->get_best().second << '\n';
 	
 	delete ppso;
 

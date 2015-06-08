@@ -1,11 +1,9 @@
 #pragma once
 
 // Particle swarm optimization for discrete or continuous
-// parameter values imported from a text file. All values
-// for one parameter must be on the same line. No new line at
-// the end of the file.
+// parameter values imported from a text file.
 // Objective and constraint functions are to be implemented
-// by deriving from IFitness. Otherwise only the class IPso
+// by deriving from IFitness. Otherwise only the class Pso
 // is supposed to be used directly by user. 
 
 #include<fstream>
@@ -23,33 +21,36 @@
 namespace Opt
 {
 	// ===============USER==INTERFACE============================================
-
+	
+	// Realization must be written by user (what to optimize)
 	__interface IFitness
-	{	// Realization must be written by user (what to optimize)
+	{
+		// Function to minimize
 		double objective(const std::vector<double>& param);
+		// Feasible when (-inf, 0], infeasible when (0, +inf)
 		std::set<double> constraint(const std::vector<double>& param);
 	};
 
-	class IPso
+	class Pso
 	{
 	public:
 		// Create new discrete PSO
-		static IPso* discrete(const char* filename, IFitness* funcs, int numPart);
+		static Pso* discrete(const char* filename, IFitness* funcs, int numPart);
 		// Create new continuous PSO
-		static IPso* continuous(const char* filename, IFitness* funcs, int numParts);
+		static Pso* continuous(const char* filename, IFitness* funcs, int numParts);
 
-		virtual ~IPso()
+		virtual ~Pso()
 		{}
 		// Termination criterions
 		enum class Term
 		{
 			gen_count,	// generation count
-			fit_dev		// no gbest deviation during 'numGen' iterations
+			fit_dev		// no deviation in gbest during 'numGen' iterations
 		};
 		// Carry out optimization
-		virtual IPso* run(int numGen, IPso::Term criterion) = 0;
+		virtual Pso* run(int numGen, Pso::Term criterion) = 0;
 		// Nullify iteration counter
-		virtual IPso* reset_counter() = 0;
+		virtual Pso* reset_counter() = 0;
 		// Optimization results
 		virtual std::pair<double, std::vector<double>> get_best() const = 0;
 		// Best fitness history
@@ -124,7 +125,7 @@ namespace Opt
 		T* m_ppos;						// current position
 		T* m_pvel;						// current velocity
 	};
-	template<class Val_t, class Par_t> class Pso_base :public IPso // Val_t = int or double, Par_t = ParamSet or ParamBounds
+	template<class Val_t, class Par_t> class Pso_base :public Pso // Val_t = int or double, Par_t = ParamSet or ParamBounds
 	{
 	protected:
 		Pso_base(const char* filename, IFitness* funcs, int numPart) :m_count(0), m_fs(filename), m_pgbest(nullptr), m_pfit(nullptr)
@@ -148,7 +149,7 @@ namespace Opt
 			out << "---------- || ------------\n\n";
 		}
 	protected:
-		void run_generic(int numGen, IPso::Term criterion)
+		void run_generic(int numGen, Pso::Term criterion)
 		{
 			m_log.push_back(m_pgbest->best_fit());
 			double X = constriction();
@@ -364,15 +365,15 @@ namespace Opt
 		{
 			delete[] m_pmaxpos;
 		}
-		IPso* run(int numGen, IPso::Term criterion)
+		Pso* run(int numGen, Pso::Term criterion)
 		{
 			Discr_Pso_base::run_generic(numGen, criterion);
-			return static_cast<IPso*>(this);
+			return static_cast<Pso*>(this);
 		}
-		IPso* reset_counter()
+		Pso* reset_counter()
 		{
 			Discr_Pso_base::reset_counter_generic();
-			return static_cast<IPso*>(this);
+			return static_cast<Pso*>(this);
 		}
 		std::pair<double, std::vector<double>> get_best() const
 		{
@@ -385,9 +386,9 @@ namespace Opt
 	private:
 		int* m_pmaxpos;
 	};
-	inline IPso* IPso::discrete(const char* filename, IFitness* funcs, int numPart)
+	inline Pso* Pso::discrete(const char* filename, IFitness* funcs, int numPart)
 	{
-		return static_cast<IPso*>(new DiscretePso(filename, funcs, numPart));
+		return static_cast<Pso*>(new DiscretePso(filename, funcs, numPart));
 	}
 	
 	// ======================CONTINUOUS=PSO======================================
@@ -522,15 +523,15 @@ namespace Opt
 			for (std::set<Particle<double>*>::iterator it = m_parts.begin(); it != m_parts.end(); ++it)
 				(*it)->init_fit(*m_pfit);
 		}
-		IPso* run(int numGen, IPso::Term criterion)
+		Pso* run(int numGen, Pso::Term criterion)
 		{
 			Cont_Pso_base::run_generic(numGen, criterion);
-			return static_cast<IPso*>(this);
+			return static_cast<Pso*>(this);
 		}
-		IPso* reset_counter()
+		Pso* reset_counter()
 		{
 			Cont_Pso_base::reset_counter_generic();
-			return static_cast<IPso*>(this);
+			return static_cast<Pso*>(this);
 		}
 		std::pair<double, std::vector<double>> get_best() const
 		{
@@ -541,8 +542,8 @@ namespace Opt
 			return temp;
 		}
 	};
-	inline IPso * IPso::continuous(const char * filename, IFitness * funcs, int numParts)
+	inline Pso * Pso::continuous(const char * filename, IFitness * funcs, int numParts)
 	{
-		return static_cast<IPso*>(new ContinuousPso(filename, funcs, numParts));
+		return static_cast<Pso*>(new ContinuousPso(filename, funcs, numParts));
 	}
 }
