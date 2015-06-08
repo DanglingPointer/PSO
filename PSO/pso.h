@@ -234,6 +234,11 @@ namespace Opt
 
 			for (m_ndim = 0; !fin.eof(); ++m_ndim) // no new line at end of the file!
 				fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			if (m_ndim == 0)
+			{
+				fin.close();
+				throw std::invalid_argument("ParamSet::ParamSet()");
+			}
 			fin.seekg(0, fin.beg);
 
 			m_psets = new std::vector<double>[m_ndim];
@@ -250,6 +255,9 @@ namespace Opt
 				buff.clear();
 			}
 			fin.close();
+			for (int i = 0; i < m_ndim; ++i)
+				if ((m_psets + i)->empty())
+					throw std::invalid_argument("ParamSet::ParamSet()");
 		}
 		~ParamSet()
 		{
@@ -404,13 +412,17 @@ namespace Opt
 
 			for (m_ndim = 0; !fin.eof(); ++m_ndim) // no new line at end of the file!
 				fin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			if (m_ndim == 0)
+			{
+				fin.close();
+				throw std::invalid_argument("ParamSet::ParamSet()");
+			}
 			fin.seekg(0, fin.beg);
 
 			m_pbounds = new std::pair<double, double>[m_ndim];
 
 			for (int dim = 0; dim < m_ndim; ++dim)
 				fin >> (m_pbounds + dim)->first >> (m_pbounds + dim)->second;
-
 			fin.close();
 		}
 		~ParamBounds()
@@ -542,7 +554,7 @@ namespace Opt
 			return temp;
 		}
 	};
-	inline Pso * Pso::continuous(const char * filename, IFitness * funcs, int numParts)
+	inline Pso* Pso::continuous(const char * filename, IFitness * funcs, int numParts)
 	{
 		return static_cast<Pso*>(new ContinuousPso(filename, funcs, numParts));
 	}
