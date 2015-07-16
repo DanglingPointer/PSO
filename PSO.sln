@@ -1,20 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.22823.1
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSO", "PSO\PSO.vcxproj", "{B35ED08F-F5C9-4D11-8A4F-0C06DBA50DD0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSO", "PSO\PSO.vcxproj", "{8D81A721-FF05-46BE-8A2F-612642102D4A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x86 = Debug|x86
-		Release|x86 = Release|x86
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B35ED08F-F5C9-4D11-8A4F-0C06DBA50DD0}.Debug|x86.ActiveCfg = Debug|Win32
-		{B35ED08F-F5C9-4D11-8A4F-0C06DBA50DD0}.Debug|x86.Build.0 = Debug|Win32
-		{B35ED08F-F5C9-4D11-8A4F-0C06DBA50DD0}.Release|x86.ActiveCfg = Release|Win32
-		{B35ED08F-F5C9-4D11-8A4F-0C06DBA50DD0}.Release|x86.Build.0 = Release|Win32
+		{8D81A721-FF05-46BE-8A2F-612642102D4A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8D81A721-FF05-46BE-8A2F-612642102D4A}.Debug|Win32.Build.0 = Debug|Win32
+		{8D81A721-FF05-46BE-8A2F-612642102D4A}.Release|Win32.ActiveCfg = Release|Win32
+		{8D81A721-FF05-46BE-8A2F-612642102D4A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
