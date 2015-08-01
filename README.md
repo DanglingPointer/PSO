@@ -1,9 +1,7 @@
 #### PSO
 Particle Swarm Optimization algorithm implemented in C++. Input parameter values are read in from a text file. Objective and constraint functions are to be written by user. Folder `/References` contains materials studied in order to write the implementation.
 
-The file `partswarmopt.h` is one of my first experiments using C++ and should be ignored. It is very simple and doesn't always function properly. This file might be interesting for historical purposes only.
-
-The second and final implementation can found in the file `pso.h` while examples of using it can be found in `ex_box.cpp` and `ex_benchmark.cpp`. It allows optimization using PSO for discrete or continuous parameter ranges. In both cases objective function and constraints have to be implemented by deriving from `__interface IFitness`. Both discrete and continuous PSO can be accessed through `class Pso` which includes all necessary functions for carrying out optimization. Input format differs somewhat however:
+The second and final version can found in the file `pso.h` while examples of using it can be found in `ex_box.cpp` and `ex_benchmark.cpp`. It allows optimization using PSO for discrete or continuous parameter ranges. In both cases objective function and constraints have to be implemented by deriving from `__interface IFitness`. Both discrete and continuous PSO can be accessed through `class Pso` which includes all necessary functions for carrying out optimization. Input formats differ somewhat however:
 
 * Discrete: all possible values for a parameter on each line.
 * Continuous: minimum and maximum value for a parameter on each line.
